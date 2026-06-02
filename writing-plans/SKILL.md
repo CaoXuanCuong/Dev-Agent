@@ -20,12 +20,28 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
-## Design Assets
+## Context Gathering
 
-Before writing tasks, check the plan's `assets/` subfolder (same directory as `plans.md`) for any design screenshots or mockups:
-- If screenshots exist, read them using the image-capable Read tool and extract UI/UX details (layout, components, colors, interactions, states, copy).
-- Reference these details in every task that has a UI component — describe exactly what the screen/component should look like, including empty states, loading states, and error states.
-- If no assets folder exists, proceed without it and note in the plan that designs are pending.
+**Before writing any task**, actively pull context from external sources in this order:
+
+### 1. Jira (via Atlanssian MCP)
+If the user provides a Jira issue key or URL, fetch the issue using the Jira MCP (`getJiraIssue`) and extract:
+- Description and acceptance criteria
+- Linked issues or sub-tasks
+- Any Figma URLs embedded in the description or comments
+
+### 2. Figma (via Figma MCP)
+If a Figma URL is found — either from Jira or provided directly by the user — use the Figma MCP to pull design specs:
+- `get_design_context` — layout, component structure, spacing, colors
+- `get_screenshot` — visual reference of each frame/screen
+
+Extract and document: screen layout, component choices, copy, empty/loading/error states, interaction patterns.
+
+**If Figma MCP hits its tool call limit:**
+1. Create the `assets/` subfolder inside the plan output directory (e.g. `docs/features/YYYY-MM-DD-<feature-name>/assets/`).
+2. Tell the user exactly what to do:
+   > "Figma MCP đã đạt giới hạn tool call. Vui lòng screenshot các frame cần thiết từ Figma và đặt vào thư mục `docs/features/YYYY-MM-DD-<feature-name>/assets/`. Báo tôi khi xong để tiếp tục phân tích design."
+3. Wait for the user to confirm before proceeding.
 
 ## File Structure
 
@@ -72,7 +88,7 @@ This structure informs the task decomposition. Each task should produce self-con
 
 **Goal:** [One sentence — what this task delivers and why it matters in the context of the feature]
 
-**UI/UX:** [If this task has a UI component, describe the exact visual and interaction spec derived from design screenshots in `assets/`. Include: layout, component choices, copy, empty/loading/error states. Omit this section entirely for purely backend tasks.]
+**UI/UX:** [If this task has a UI component, describe the exact visual and interaction spec derived from design screenshots in `docs/features/YYYY-MM-DD-<feature-name>/assets/`. Include: layout, component choices, copy, empty/loading/error states. Omit this section entirely for purely backend tasks.]
 
 **Files:**
 - Create: `exact/path/to/file.py`
@@ -105,6 +121,8 @@ Run: `pytest tests/path/test.py::test_name -v`
 Expected: PASS
 
 - [ ] **Step 5: Verify UI/UX** *(skip for non-UI tasks)*
+
+If no design was loaded yet via Figma MCP (Context Gathering step 2), first check the `docs/features/YYYY-MM-DD-<feature-name>/assets/` subfolder for screenshots — read them with the image-capable Read tool. If `docs/features/YYYY-MM-DD-<feature-name>/assets/` is also empty, note that designs are pending and skip this step.
 
 Open the screen/component in the browser and check against the **UI/UX** spec above:
 - [ ] Layout, color, and spacing match the design
